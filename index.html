@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SolarOps ERP | Full Suite</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root { --solar-primary: #f39c12; --solar-dark: #2c3e50; --solar-bg: #f8f9fa; }
+        body { background-color: var(--solar-bg); font-family: 'Segoe UI', sans-serif; }
+        .navbar { background-color: var(--solar-dark); color: white; }
+        .nav-tabs .nav-link { color: var(--solar-dark); font-weight: 600; border: none; padding: 12px 20px; }
+        .nav-tabs .nav-link.active { background-color: var(--solar-primary); color: white; border-radius: 10px; }
+        .card { border: none; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .admin-box { display: none; background: #fff4e5; border: 1px dashed var(--solar-primary); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .status-badge { cursor: pointer; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        .project-link { color: var(--solar-primary); font-weight: 600; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar p-3 shadow-sm">
+    <div class="container d-flex justify-content-between">
+        <span class="navbar-brand mb-0 h1">☀️ SolarOps <span class="text-warning">v5.0</span></span>
+        <div class="form-check form-switch text-white">
+            <input class="form-check-input" type="checkbox" id="adminSwitch" onchange="handleAuth()">
+            <label class="form-check-label" for="adminSwitch" id="authLabel">Restricted Mode</label>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4 pb-5">
+    <ul class="nav nav-tabs mb-4 border-0" id="erpTabs">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-sites">Sites</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-customers">Customers</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-mats">Materials</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-team">Team</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-costs">Costs</button></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade" id="tab-customers">
+            <div id="admin-cust" class="admin-box">
+                <h6>Add New Customer</h6>
+                <div class="row g-2">
+                    <div class="col-md-5"><input type="text" id="in-custName" class="form-control" placeholder="Customer Name"></div>
+                    <div class="col-md-5">
+                        <select id="in-custProject" class="form-select">
+                            <option value="">Link to Project...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2"><button class="btn btn-warning w-100" onclick="addItem('customers')">Add</button></div>
+                </div>
+            </div>
+            <div class="card p-4">
+                <table class="table align-middle">
+                    <thead><tr><th>Customer Name</th><th>Associated Project</th><th class="admin-only">Action</th></tr></thead>
+                    <tbody id="list-customers"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-pane fade show active" id="tab-sites">
+            <div id="admin-site" class="admin-box">
+                <h6>Add New Project Site</h6>
+                <div class="row g-2">
+                    <div class="col-md-5"><input type="text" id="in-siteName" class="form-control" placeholder="Project Site Name"></div>
+                    <div class="col-md-5"><input type="text" id="in-siteLoc" class="form-control" placeholder="Location"></div>
+                    <div class="col-md-2"><button class="btn btn-warning w-100" onclick="addItem('sites')">Add</button></div>
+                </div>
+            </div>
+            <div class="card p-4"><table class="table align-middle"><thead><tr><th>Site</th><th>Location</th><th>Status</th><th class="admin-only">Action</th></tr></thead><tbody id="list-sites"></tbody></table></div>
+        </div>
+
+        <div class="tab-pane fade" id="tab-mats">
+            <div id="admin-mat" class="admin-box"><h6>Update Inventory</h6><div class="row g-2"><div class="col-md-8"><input type="text" id="in-matName" class="form-control" placeholder="Item"></div><div class="col-md-2"><input type="number" id="in-matQty" class="form-control" placeholder="Qty"></div><div class="col-md-2"><button class="btn btn-warning w-100" onclick="addItem('mats')">Add</button></div></div></div>
+            <div class="card p-4"><table class="table"><thead><tr><th>Material</th><th>Quantity</th><th class="admin-only">Action</th></tr></thead><tbody id="list-mats"></tbody></table></div>
+        </div>
+        <div class="tab-pane fade" id="tab-team">
+            <div id="admin-team" class="admin-box"><h6>Assign Staff</h6><div class="row g-2"><div class="col-md-8"><input type="text" id="in-teamName" class="form-control" placeholder="Name"></div><div class="col-md-2"><input type="text" id="in-teamRole" class="form-control" placeholder="Role"></div><div class="col-md-2"><button class="btn btn-warning w-100" onclick="addItem('team')">Add</button></div></div></div>
+            <div class="card p-4"><table class="table"><thead><tr><th>Name</th><th>Role</th><th class="admin-only">Action</th></tr></thead><tbody id="list-team"></tbody></table></div>
+        </div>
+        <div class="tab-pane fade" id="tab-costs">
+            <div id="admin-cost" class="admin-box"><h6>Log Expense</h6><div class="row g-2"><div class="col-md-7"><input type="text" id="in-costDesc" class="form-control" placeholder="Description"></div><div class="col-md-3"><input type="number" id="in-costAmt" class="form-control" placeholder="Amt"></div><div class="col-md-2"><button class="btn btn-warning w-100" onclick="addItem('costs')">Log</button></div></div></div>
+            <div class="card p-4"><table class="table"><thead><tr><th>Desc</th><th>Amount</th><th class="admin-only">Action</th></tr></thead><tbody id="list-costs"></tbody></table><div class="text-end mt-3"><h5 id="totalCost">Total: ₹0</h5></div></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const PASS = "solace1998";
+    let isAdmin = false;
+
+    let db = JSON.parse(localStorage.getItem('solar_erp_v5')) || {
+        sites: [], mats: [], team: [], costs: [], customers: []
+    };
+
+    function handleAuth() {
+        const check = document.getElementById('adminSwitch');
+        if(check.checked) {
+            if(prompt("Enter Admin Pass:") === PASS) {
+                isAdmin = true;
+                document.getElementById('authLabel').innerText = "Admin: UNLOCKED";
+            } else { alert("Wrong Pass"); check.checked = false; }
+        } else {
+            isAdmin = false;
+            document.getElementById('authLabel').innerText = "Restricted Mode";
+        }
+        render();
+    }
+
+    function addItem(type) {
+        if(type === 'sites') {
+            db.sites.push({id:Date.now(), name:document.getElementById('in-siteName').value, loc:document.getElementById('in-siteLoc').value, status:'Pending'});
+        } else if(type === 'customers') {
+            db.customers.push({id:Date.now(), name:document.getElementById('in-custName').value, project:document.getElementById('in-custProject').value});
+        } else if(type === 'mats') {
+            db.mats.push({id:Date.now(), name:document.getElementById('in-matName').value, qty:document.getElementById('in-matQty').value});
+        } else if(type === 'team') {
+            db.team.push({id:Date.now(), name:document.getElementById('in-teamName').value, role:document.getElementById('in-teamRole').value});
+        } else if(type === 'costs') {
+            db.costs.push({id:Date.now(), desc:document.getElementById('in-costDesc').value, amt:parseFloat(document.getElementById('in-costAmt').value)});
+        }
+        save();
+    }
+
+    function save() { localStorage.setItem('solar_erp_v5', JSON.stringify(db)); render(); }
+
+    function render() {
+        document.querySelectorAll('.admin-box').forEach(el => el.style.display = isAdmin ? 'block' : 'none');
+        
+        // Update Project Dropdown in Customer Tab
+        const dropdown = document.getElementById('in-custProject');
+        dropdown.innerHTML = '<option value="">Link to Project...</option>' + db.sites.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+
+        // Render Customers
+        document.getElementById('list-customers').innerHTML = db.customers.map(c => `<tr><td><strong>${c.name}</strong></td><td><span class="project-link">${c.project || 'Unlinked'}</span></td><td style="display:${isAdmin?'table-cell':'none'}"><button onclick="deleteItem('customers',${c.id})" class="btn btn-sm btn-danger">X</button></td></tr>`).join('');
+
+        // Render Sites
+        document.getElementById('list-sites').innerHTML = db.sites.map(s => `<tr><td>${s.name}</td><td>${s.loc}</td><td><span onclick="toggleStatus(${s.id})" class="status-badge ${s.status==='Completed'?'bg-success text-white':'bg-warning'}">${s.status}</span></td><td style="display:${isAdmin?'table-cell':'none'}"><button onclick="deleteItem('sites',${s.id})" class="btn btn-sm btn-danger">X</button></td></tr>`).join('');
+
+        // Render Mats, Team, Costs (similar logic)
+        document.getElementById('list-mats').innerHTML = db.mats.map(m => `<tr><td>${m.name}</td><td>${m.qty}</td><td style="display:${isAdmin?'table-cell':'none'}"><button onclick="deleteItem('mats',${m.id})" class="btn btn-sm btn-danger">X</button></td></tr>`).join('');
+        document.getElementById('list-team').innerHTML = db.team.map(t => `<tr><td>${t.name}</td><td>${t.role}</td><td style="display:${isAdmin?'table-cell':'none'}"><button onclick="deleteItem('team',${t.id})" class="btn btn-sm btn-danger">X</button></td></tr>`).join('');
+        
+        let total = 0;
+        document.getElementById('list-costs').innerHTML = db.costs.map(c => { total += c.amt; return `<tr><td>${c.desc}</td><td>₹${c.amt}</td><td style="display:${isAdmin?'table-cell':'none'}"><button onclick="deleteItem('costs',${c.id})" class="btn btn-sm btn-danger">X</button></td></tr>`; }).join('');
+        document.getElementById('totalCost').innerText = `Total Expense: ₹${total}`;
+    }
+
+    function toggleStatus(id) { if(!isAdmin) return; let s = db.sites.find(x => x.id === id); s.status = s.status === 'Pending' ? 'Completed' : 'Pending'; save(); }
+    function deleteItem(type, id) { db[type] = db[type].filter(x => x.id !== id); save(); }
+
+    render();
+</script>
+</body>
+</html>
